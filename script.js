@@ -1,7 +1,5 @@
-// 1️⃣ Fonction pour chercher l'ID d'une équipe
 async function getTeamId(teamName) {
     const url = `https://v3.football.api-sports.io/v3/teams?search=${teamName}`;
-
     const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -10,16 +8,10 @@ async function getTeamId(teamName) {
         }
     });
     const data = await response.json();
-
-    if (!data.response || data.response.length === 0) {
-        return null;
-    }
-
-    // On prend le premier résultat
+    if (!data.response || data.response.length === 0) return null;
     return data.response[0].team.id;
 }
 
-// 2️⃣ Fonction principale pour analyser un match
 async function analyserMatch() {
     const homeName = document.getElementById("homeTeam").value;
     const awayName = document.getElementById("awayTeam").value;
@@ -29,7 +21,6 @@ async function analyserMatch() {
         return;
     }
 
-    // Cherche les IDs des équipes via l'API
     const homeId = await getTeamId(homeName);
     const awayId = await getTeamId(awayName);
 
@@ -38,8 +29,8 @@ async function analyserMatch() {
         return;
     }
 
-    // Récupérer stats des derniers matchs
-    const url = `https://v3.football.api-sports.io/v3/fixtures?season=2025&team=${homeId}&opponent=${awayId}`;
+    // Récupère les derniers matchs de l'équipe home
+    const url = `https://v3.football.api-sports.io/v3/fixtures?team=${homeId}&season=2025&last=1`;
 
     try {
         const response = await fetch(url, {
@@ -52,7 +43,7 @@ async function analyserMatch() {
 
         const data = await response.json();
         if (!data.response || data.response.length === 0) {
-            alert("Aucune stat trouvée pour ce match.");
+            alert("Aucune stat trouvée pour l'équipe " + homeName);
             return;
         }
 
@@ -65,7 +56,7 @@ async function analyserMatch() {
         const analyse = `
 Match analysé : ${homeName} vs ${awayName}
 
-📊 Dernier match enregistré :
+📊 Dernier match de ${homeName} :
 - ${homeName} : ${homeGoals} buts
 - ${awayName} : ${awayGoals} buts
 
