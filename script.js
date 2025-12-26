@@ -1,4 +1,4 @@
-function analyserMatch() {
+async function analyserMatch() {
     const home = document.getElementById("homeTeam").value;
     const away = document.getElementById("awayTeam").value;
 
@@ -7,38 +7,46 @@ function analyserMatch() {
         return;
     }
 
-    // Stats simulées
-    const stats = {
-        homeGoals: 1.9,
-        awayGoals: 1.3,
-        homeConceded: 1.0,
-        awayConceded: 1.6,
-        homeForm: "V V N V D",
-        awayForm: "D N D V D"
-    };
+    // Appel à l'API pour récupérer les stats
+    const url = `https://v3.football.api-sports.io/v3/fixtures?season=2025&team=${home}&opponent=${away}`;
+    
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "X-RapidAPI-Key": API_FOOTBALL_KEY,
+                "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com"
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.response.length === 0) {
+            alert("Aucune stat trouvée pour ce match");
+            return;
+        }
 
-    const analyse = `
+        // Exemple simple : prendre le dernier match pour stats
+        const lastMatch = data.response[0];
+        const homeGoals = lastMatch.goals.home;
+        const awayGoals = lastMatch.goals.away;
+        const probableScore = `${homeGoals}-${awayGoals}`;
+
+        const analyse = `
 Match analysé : ${home} vs ${away}
 
-📊 Forme récente :
-- ${home} : ${stats.homeForm}
-- ${away} : ${stats.awayForm}
+📊 Dernier match :
+- ${home} : ${homeGoals} buts
+- ${away} : ${awayGoals} buts
 
-⚽ Moyenne de buts :
-- ${home} : ${stats.homeGoals} marqués / match
-- ${away} : ${stats.awayGoals} marqués / match
-
-🔎 Analyse PronoMaster :
-${home} présente une meilleure dynamique et une solidité défensive supérieure.
-${away} encaisse régulièrement à l’extérieur.
-
-📈 Probabilité estimée :
-- Victoire ${home} : élevée
-- Match nul : possible
-- Victoire ${away} : faible
-
-🎯 Score probable : 2-1
+🎯 Score probable : ${probableScore}
 `;
 
-    document.getElementById("analyseTexte").innerText = analyse;
+        document.getElementById("analyseTexte").innerText = analyse;
+
+    } catch (error) {
+        console.error(error);
+        alert("Erreur lors de la récupération des stats");
+    }
 }
+
